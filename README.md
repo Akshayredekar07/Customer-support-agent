@@ -1,20 +1,24 @@
-# Langie Agent (Customer Support Workflow)
 
-Langie Agent is a staged, auditable customer support workflow built on LangGraph and MCP tools. It orchestrates COMMON (internal/LLM) and ATLAS (external) servers, persists state across stages, and outputs a final structured payload with detailed logs.
+# **Langie Agent (Customer Support Workflow)**
 
-## Key Features
-- Stage-based orchestration (11 stages) with clear responsibilities
-- MCP routing: COMMON for internal LLM/logic, ATLAS for external systems
-- Persistent state via MemorySaver, with stage-by-stage audit logs
-- Conditional human-in-the-loop (ASK/WAIT)
-- LLM-enhanced steps: entity parsing/normalization, semantic KB search, retrieval summarization, scoring with rationale, empathetic response generation
-- Deterministic and non-deterministic transitions with explicit routing
-- Comprehensive edge case testing framework
+Langie Agent is a staged, auditable customer support workflow built on **LangGraph** and **MCP tools**.
+It orchestrates **COMMON (internal/LLM)** and **ATLAS (external)** servers, persists state across stages, and outputs a final structured payload with detailed logs.
 
-## Folder Structure
-Top-level layout with descriptions of important files and directories.
+**Key Features**
 
-```
+* **Stage-based orchestration** (11 stages) with clear responsibilities
+* **MCP routing**: COMMON for internal LLM/logic, ATLAS for external systems
+* **Persistent state** via MemorySaver, with stage-by-stage audit logs
+* **Conditional human-in-the-loop** (ASK / WAIT)
+* **LLM-enhanced steps**: entity parsing, normalization, semantic KB search, retrieval summarization, scoring with rationale, empathetic response generation
+* **Deterministic + non-deterministic transitions** with explicit routing
+* **Comprehensive edge case testing framework**
+
+**Folder Structure**
+
+Top-level layout with descriptions of important files and directories:
+
+```sh
 customer_support_agent/
 ├─ agent/
 │  └─ graph.py                  # LangGraph workflow nodes, routing, and audit logging
@@ -44,88 +48,129 @@ customer_support_agent/
 └─ README.md                    # This guide
 ```
 
-## Setup
-Prerequisites: Python 3.10+ recommended.
+**Setup**
 
-1) Create and activate a virtual environment, then install dependencies.
-```
+**Prerequisites**: Python 3.10+ recommended.
+
+1. **Create and activate a virtual environment**, then install dependencies:
+
+```bash
 python -m venv .venv
-. .venv/Scripts/activate  # Windows PowerShell
+. .venv/Scripts/activate   # Windows PowerShell
 pip install -r requirements.txt
 ```
 
-2) Optional environment variables (defaults exist):
-- `COMMON_MCP_URL` (default `http://localhost:5001/mcp/`)
-- `ATLAS_MCP_URL` (default `http://localhost:5002/mcp/`)
-- `KB_PATHS` or `KB_PATH` (default `config/knowledge_base.json`)
-- `GOOGLE_API_KEY` (only needed if using live Google GenAI in `atlas_client.py`)
+2. **Set environment variables**
 
-If `GOOGLE_API_KEY` is not set, the ATLAS client should be configured to operate in a mock/deterministic mode.
+* Preferred: use a `.env` file at the project root.
+* Copy the example file and fill in your own keys/URLs:
 
-## Running
-### Start MCP servers (in a dedicated shell)
+```bash
+# Windows (PowerShell)
+Copy-Item env_example.txt .env
+
+# macOS/Linux
+cp env_example.txt .env
 ```
+
+Open `.env` and replace placeholders with your values:
+
+```
+GOOGLE_API_KEY=your_google_api_key
+COMMON_MCP_URL=http://localhost:5001/mcp/
+ATLAS_MCP_URL=http://localhost:5002/mcp/
+KB_PATHS=config/knowledge_base.json
+```
+
+**Notes**:
+
+* Do not commit `.env` to version control.
+* If `GOOGLE_API_KEY` is not set, configure `clients/atlas_client.py` to use **mock mode**.
+
+**Running**
+
+**Start MCP servers (in a dedicated shell)**
+
+```bash
 python start_mcp_servers.py
 ```
-This launches:
-- COMMON server on `http://localhost:5001/mcp/`
-- ATLAS server on `http://localhost:5002/mcp/`
 
-### Run the workflow
-Human-readable output:
-```
+This launches:
+
+* COMMON server → `http://localhost:5001/mcp/`
+* ATLAS server → `http://localhost:5002/mcp/`
+
+**Run the workflow**
+
+**Human-readable output:**
+
+```bash
 python main.py --input config/input_detailed.json
 ```
-JSON output with logs:
-```
+
+**JSON output with logs:**
+
+```bash
 python main.py --input config/input_detailed.json --json
 ```
 
-### Optional frontend runner
-```
+**Optional frontend runner**
+
+```bash
 python frontend.py
 ```
 
-## Workflow Stages
-1) INTAKE: accept input payload
-2) UNDERSTAND: parse request (COMMON), extract entities (ATLAS), fallback entity inference
-3) PREPARE: normalize fields (COMMON), enrich records (ATLAS), flags (COMMON), LLM entity normalization (COMMON)
-4) ASK: clarification (ATLAS) only if `missing_info` exists; otherwise skipped
-5) WAIT: awaits customer reply when ASK ran; otherwise skipped
-6) RETRIEVE: generate semantic query (COMMON), KB search (ATLAS), summarize retrieval (COMMON)
-7) DECIDE: scoring (COMMON), escalation decision (ATLAS), decision rationale (COMMON)
-8) UPDATE: update/close external ticket (ATLAS); status reflects escalation decision
-9) CREATE: response generation (COMMON)
-10) DO: external API calls and notifications (ATLAS)
-11) COMPLETE: finalize and log
+**Workflow Stages**
 
-## MCP Routing
-- COMMON: `parse_request_text`, `normalize_fields`, `add_flags_calculations`, `entity_normalization`, `generate_semantic_query`, `summarize_retrieval`, `solution_evaluation`, `decision_rationale`, `response_generation`
-- ATLAS: `extract_entities`, `enrich_records`, `clarify_question`, `extract_answer`, `knowledge_base_search`, `escalation_decision`, `update_ticket`, `close_ticket`, `execute_api_calls`, `trigger_notifications`
+1. **INTAKE** – accept input payload
+2. **UNDERSTAND** – parse request (COMMON), extract entities (ATLAS), fallback inference
+3. **PREPARE** – normalize fields (COMMON), enrich records (ATLAS), flags, entity normalization
+4. **ASK** – clarification (ATLAS) if `missing_info` exists
+5. **WAIT** – awaits customer reply if ASK ran
+6. **RETRIEVE** – generate semantic query (COMMON), KB search (ATLAS), summarize retrieval
+7. **DECIDE** – scoring (COMMON), escalation decision (ATLAS), rationale (COMMON)
+8. **UPDATE** – update/close external ticket (ATLAS)
+9. **CREATE** – response generation (COMMON)
+10. **DO** – external API calls & notifications (ATLAS)
+11. **COMPLETE** – finalize & log
 
-## Edge Case Testing
-Use provided sample configs to exercise different flows:
-- Critical/auth-like: adjust priority and query to test escalation path
-- Delivery clarification: ensure `order_number` or delivery identifiers trigger ASK/WAIT
-- Payment dispute: ensure `transaction_reference` triggers ASK/WAIT
+**MCP Routing**
 
-Run examples:
-```
+* **COMMON**:
+  `parse_request_text`, `normalize_fields`, `add_flags_calculations`,
+  `entity_normalization`, `generate_semantic_query`, `summarize_retrieval`,
+  `solution_evaluation`, `decision_rationale`, `response_generation`
+
+* **ATLAS**:
+  `extract_entities`, `enrich_records`, `clarify_question`, `extract_answer`,
+  `knowledge_base_search`, `escalation_decision`, `update_ticket`, `close_ticket`,
+  `execute_api_calls`, `trigger_notifications`
+
+**Edge Case Testing**
+
+Use sample configs to exercise different flows:
+
+* **Critical/auth-like**: adjust priority & query → test escalation path
+* **Delivery clarification**: ensure `order_number` triggers ASK/WAIT
+* **Payment dispute**: ensure `transaction_reference` triggers ASK/WAIT
+
+**Run examples:**
+
+```bash
 python main.py --input config/ask_demo_delivery.json --json
 python main.py --input config/payment_input.json --json
 ```
 
-## Configuration Overview
-- `config/agent_config.json`: node catalog and abilities metadata
-- `config/workflow_config.json`: input schema, stage prompts, and ability-to-MCP mapping
-- `config/knowledge_base.json`: retrieval corpus used by `knowledge_base_search`
-- `config/*.json`: input examples you can customize
+**Configuration Overview**
 
-## Troubleshooting
-- Credentials error for Google GenAI: set `GOOGLE_API_KEY` or enable mock mode in `clients/atlas_client.py`.
-- ASK stage not triggered: ensure `missing_info` is produced in UNDERSTAND/PREPARE.
-- Empty KB result: update `config/knowledge_base.json` or set `KB_PATHS` to additional KB files.
-- Import errors: verify virtual environment activation and dependency installation.
+* `config/agent_config.json` – node catalog & abilities metadata
+* `config/workflow_config.json` – input schema, stage prompts, ability-to-MCP mapping
+* `config/knowledge_base.json` – retrieval corpus for KB search
+* `config/*.json` – input examples
 
-## License
-Proprietary / Internal use
+**Troubleshooting**
+
+* **Credentials error (Google GenAI)** → set `GOOGLE_API_KEY` or enable mock mode in `atlas_client.py`
+* **ASK stage not triggered** → ensure `missing_info` is produced in UNDERSTAND/PREPARE
+* **Empty KB result** → update `knowledge_base.json` or add more via `KB_PATHS`
+* **Import errors** → check venv activation & dependency install
