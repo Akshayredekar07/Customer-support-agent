@@ -165,4 +165,3 @@ python main.py --input config/payment_input.json --json
 * `config/workflow_config.json` – input schema, stage prompts, ability-to-MCP mapping
 * `config/knowledge_base.json` – retrieval corpus for KB search
 * `config/*.json` – input examples
-
