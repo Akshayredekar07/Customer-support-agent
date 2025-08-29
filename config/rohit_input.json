@@ -1,0 +1,8 @@
+{
+    "customer_name": "Rohit Mehra",
+    "email": "rohit.mehra@example.com",
+    "query": "Hi team, I made an online transfer of ₹50,000 yesterday using net banking, but the amount has been debited from my account and not credited to the beneficiary yet. The transaction reference number is TXN458923. Please check the status and let me know when it will be resolved, as this is urgent for a business payment.",
+    "priority": "Critical",
+    "ticket_id": "TCK-BNK-55412"
+  }
+  

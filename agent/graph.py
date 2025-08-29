@@ -8,8 +8,34 @@ from langgraph.checkpoint.memory import MemorySaver
 from datetime import datetime, timedelta
 from schemas.agent_state import AgentState
 from typing import Any, Dict
-from clients.mcp_client import mcp_client
+from clients.common_client import CommonClient
+from clients.atlas_client import AtlasClient
 import asyncio
+
+# Initialize direct clients per spec (COMMON and ATLAS only)
+_COMMON = CommonClient()
+_ATLAS = AtlasClient()
+
+async def _common_call(ability: str, **kwargs):
+    state_like: Dict[str, Any] = {
+        "query": kwargs.get("query", ""),
+        "retrieved_data": kwargs.get("retrieved_data", {}),
+        "priority": kwargs.get("priority", ""),
+        "customer_name": kwargs.get("customer_name", ""),
+        "entities": kwargs.get("entities", {}),
+        "solution_score": kwargs.get("solution_score", 0),
+    }
+    return await asyncio.to_thread(_COMMON.execute, ability, state_like)
+
+async def _atlas_call(ability: str, **kwargs):
+    state_like: Dict[str, Any] = {
+        "query": kwargs.get("query", ""),
+        "ticket_id": kwargs.get("ticket_id", ""),
+        "customer_email": kwargs.get("customer_email", ""),
+        "solution_score": kwargs.get("score", 0),
+        "entities": kwargs.get("entities", {}),
+    }
+    return await asyncio.to_thread(_ATLAS.execute, ability, state_like)
 
 def add_audit(state: AgentState, stage: str, abilities: list, servers: list, extras: dict | None = None):
     # Add slight offset per entry for more realistic differing timestamps
@@ -36,12 +62,12 @@ async def understand_node(state: AgentState):
     servers = []
     
     # Execute COMMON server ability (LLM-based)
-    structured = await mcp_client.execute_common_ability("parse_request_text", query=state["query"])
+    structured = await _common_call("parse_request_text", query=state["query"])
     abilities.append("parse_request_text")
     servers.append("COMMON")
     
     # Execute ATLAS server ability (LLM-based), then prefer ATLAS if it returns more fields
-    entities = await mcp_client.execute_atlas_ability("extract_entities", query=state["query"])
+    entities = await _atlas_call("extract_entities", query=state["query"]) 
     abilities.append("extract_entities")
     servers.append("ATLAS")
     
@@ -76,17 +102,17 @@ async def prepare_node(state: AgentState):
     servers = []
     
     # Execute COMMON server abilities
-    norm = await mcp_client.execute_common_ability("normalize_fields", priority=state["priority"], ticket_id=state["ticket_id"])
+    norm = await _common_call("normalize_fields", priority=state["priority"], ticket_id=state["ticket_id"])
     abilities.append("normalize_fields")
     servers.append("COMMON")
     
     # Execute ATLAS server ability
-    enrich = await mcp_client.execute_atlas_ability("enrich_records", ticket_id=state["ticket_id"], customer_email=state["email"])
+    enrich = await _atlas_call("enrich_records", ticket_id=state["ticket_id"], customer_email=state["email"])
     abilities.append("enrich_records")
     servers.append("ATLAS")
     
     # Execute COMMON server ability
-    flags = await mcp_client.execute_common_ability("add_flags_calculations", priority=state["priority"], query=state["query"])
+    flags = await _common_call("add_flags_calculations", priority=state["priority"], query=state["query"])
     abilities.append("add_flags_calculations")
     servers.append("COMMON")
     
@@ -121,7 +147,7 @@ async def ask_node(state: AgentState):
         return {"audit_log": _audit["audit_log"]}
     
     # Execute ATLAS server ability
-    question = await mcp_client.execute_atlas_ability("clarify_question", query=state["query"], structured_data=state.get("structured_data", {}))
+    question = await _atlas_call("clarify_question", query=state["query"], structured_data=state.get("structured_data", {}))
     abilities.append("clarify_question")
     servers.append("ATLAS")
     
@@ -151,7 +177,7 @@ async def wait_node(state: AgentState):
             return {"audit_log": _audit["audit_log"]}
 
     # Execute ATLAS server ability with real user input
-    answer = await mcp_client.execute_atlas_ability("extract_answer", customer_response=user_response)
+    answer = await _atlas_call("extract_answer", customer_response=user_response)
     abilities.append("extract_answer")
     servers.append("ATLAS")
     
@@ -168,13 +194,13 @@ async def retrieve_node(state: AgentState):
     servers = []
     
     # Optionally generate a semantic query (COMMON)
-    semantic = await mcp_client.execute_common_ability("generate_semantic_query", query=state["query"], entities=state.get("structured_data", {}).get("entities", {}))
+    semantic = await _common_call("generate_semantic_query", query=state["query"], entities=state.get("structured_data", {}).get("entities", {}))
     abilities.append("generate_semantic_query")
     servers.append("COMMON")
 
     # Execute ATLAS server ability using semantic query when present
     effective_query = semantic.get("semantic_query") if isinstance(semantic, dict) and semantic.get("semantic_query") else state["query"]
-    data = await mcp_client.execute_atlas_ability("knowledge_base_search", query=effective_query)
+    data = await _atlas_call("knowledge_base_search", query=effective_query)
     abilities.append("knowledge_base_search")
     servers.append("ATLAS")
     
@@ -185,7 +211,7 @@ async def retrieve_node(state: AgentState):
         data = {"data": "To reset your password, use the latest reset link; if it fails, request a new link."}
 
     # Summarize retrieval (COMMON)
-    summary = await mcp_client.execute_common_ability("summarize_retrieval", retrieved=data)
+    summary = await _common_call("summarize_retrieval", retrieved=data)
     abilities.append("summarize_retrieval")
     servers.append("COMMON")
 
@@ -199,13 +225,13 @@ async def decide_node(state: AgentState):
     servers = []
     
     # Execute COMMON server ability
-    score_result = await mcp_client.execute_common_ability("solution_evaluation", query=state["query"], priority=state.get("priority", ""), retrieved_data=state.get("retrieved_data", {}))
+    score_result = await _common_call("solution_evaluation", query=state["query"], priority=state.get("priority", ""), retrieved_data=state.get("retrieved_data", {}))
     abilities.append("solution_evaluation")
     servers.append("COMMON")
     score = int(score_result.get("score", 50)) if isinstance(score_result, dict) else int(score_result)
     
     # Execute ATLAS server ability
-    escalation = await mcp_client.execute_atlas_ability("escalation_decision", query=state["query"], score=score)
+    escalation = await _atlas_call("escalation_decision", query=state["query"], score=score)
     abilities.append("escalation_decision")
     servers.append("ATLAS")
     
@@ -228,7 +254,7 @@ async def decide_node(state: AgentState):
             route = "do"
     
     # LLM-style decision rationale (COMMON)
-    rationale = await mcp_client.execute_common_ability("decision_rationale", score=score, priority=state.get("priority", ""))
+    rationale = await _common_call("decision_rationale", score=score, priority=state.get("priority", ""))
     abilities.append("decision_rationale")
     servers.append("COMMON")
     reason = rationale if isinstance(rationale, str) and rationale else ("Score < 50 → escalate" if route == "update" else ("50 ≤ score < 80 → perform actions (DO)" if route == "do" else "80 ≤ score < 95 → generate response (CREATE)"))
@@ -243,11 +269,11 @@ async def update_node(state: AgentState):
     servers = []
     
     # Execute ATLAS server abilities
-    await mcp_client.execute_atlas_ability("update_ticket", ticket_id=state["ticket_id"], status="in_progress", priority=state["priority"])
+    await _atlas_call("update_ticket", ticket_id=state["ticket_id"], status="in_progress", priority=state["priority"])
     abilities.append("update_ticket")
     servers.append("ATLAS")
     
-    await mcp_client.execute_atlas_ability("close_ticket", ticket_id=state["ticket_id"])
+    await _atlas_call("close_ticket", ticket_id=state["ticket_id"])
     abilities.append("close_ticket")
     servers.append("ATLAS")
     
@@ -262,7 +288,14 @@ async def create_node(state: AgentState):
     servers = []
     
     # Execute COMMON server ability
-    summary = await mcp_client.execute_common_ability("response_generation", query=state["query"], solution=state.get("retrieved_data", {}), customer_name=state["customer_name"])
+    summary = await _common_call(
+        "response_generation",
+        query=state["query"],
+        solution=state.get("retrieved_data", {}),
+        customer_name=state["customer_name"],
+        entities=state.get("entities", {}),
+        solution_score=state.get("solution_score", 0),
+    )
     abilities.append("response_generation")
     servers.append("COMMON")
     
@@ -276,11 +309,11 @@ async def do_node(state: AgentState):
     servers = []
     
     # Execute ATLAS server abilities
-    await mcp_client.execute_atlas_ability("execute_api_calls", ticket_id=state["ticket_id"], action_type="standard")
+    await _atlas_call("execute_api_calls", ticket_id=state["ticket_id"], action_type="standard")
     abilities.append("execute_api_calls")
     servers.append("ATLAS")
     
-    await mcp_client.execute_atlas_ability("trigger_notifications", customer_email=state["email"], notification_type="update")
+    await _atlas_call("trigger_notifications", customer_email=state["email"], notification_type="update")
     abilities.append("trigger_notifications")
     servers.append("ATLAS")
     
