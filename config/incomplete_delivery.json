@@ -1,0 +1,7 @@
+{
+    "customer_name": "Michael Chen",
+    "email": "michael.chen@example.com",
+    "query": "My delivery is late and I need to track it. Can you help me find out where it is?",
+    "priority": "Medium",
+    "ticket_id": "TCK-DEL-002"
+}

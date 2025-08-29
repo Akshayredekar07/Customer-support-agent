@@ -46,7 +46,7 @@ async def main():
     
     incoming_response = ""
     
-    # Initialize state (abbrev comments omitted)
+
     initial_state: AgentState = {
         "ticket_id": input_payload["ticket_id"],
         "customer_name": input_payload["customer_name"],
@@ -93,12 +93,12 @@ async def main():
             pass
         final_state = graph.get_state({"configurable": {"thread_id": thread_id}}).values
 
-        # If we are awaiting a human response (regardless of route), prompt and resume
+
         if (
             str(final_state.get("status", "")) == "awaiting_customer"
             and not incoming_response
         ):
-            # Use dedicated clarification field
+
             question_text = final_state.get("clarification_question")
             print("\nClarification needed (from LLM):")
             print(question_text or "Please provide more details to proceed.")
@@ -109,11 +109,11 @@ async def main():
                 user_reply = ""
 
             if user_reply:
-                # Resume second pass with customer_response provided
+
                 resume_state: AgentState = {
                     "ticket_id": thread_id,
                     "customer_response": user_reply,
-                    # Minimal keys; checkpointer will merge with existing
+
                     "structured_data": final_state.get("structured_data", {}),
                     "audit_log": final_state.get("audit_log", []),
                 }  # type: ignore
@@ -127,7 +127,6 @@ async def main():
         sys.exit(1)
 
     if args.json:
-        # Build final JSON in requested structure
         final_output = {
             "final_payload": {
                 "ticket_id": final_state.get("ticket_id"),
@@ -137,7 +136,7 @@ async def main():
                 "priority": final_state.get("priority"),
                 "entities": final_state.get("structured_data", {}).get("entities", final_state.get("entities", {})),
                 "normalized_fields": {
-                    # Derive a dynamic priority score influenced by priority and decision score
+
                     "priority_score": (
                         min(100, max(50,
                             (90 if str(final_state.get("priority", "")).lower()=="high" else (98 if str(final_state.get("priority", "")).lower()=="critical" else (80 if str(final_state.get("priority", "")).lower()=="medium" else 70)))
@@ -160,17 +159,14 @@ async def main():
                 },
                 "response": final_state.get("solution_summary", ""),
                 "retrieval_summary": final_state.get("retrieval_summary", ""),
-                "actions_taken": (lambda logs: [
-                    (a.get("action") or "").replace("_", " ").title()
-                    for a in logs if a.get("stage")=="DO" and a.get("action")
-                ])(final_state.get("audit_log", []))
+                "actions_taken": [a.get("action", "").replace("_", " ").title() for a in final_state.get("audit_log", []) if a.get("stage")=="DO" and a.get("action")]
             },
             "logs": final_state.get("audit_log", [])
         }
         print(json.dumps(final_output, indent=2))
         return
 
-    # Default: human-friendly console output
+
     print("\nFINAL PAYLOAD - key fields")
     print("=" * 80)
     for k in ("ticket_id","customer_name","email","query","priority","solution_score","route","status"):
@@ -181,3 +177,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+

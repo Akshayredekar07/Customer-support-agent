@@ -1,0 +1,7 @@
+{
+    "customer_name": "Emily Rodriguez",
+    "email": "emily.rodriguez@example.com",
+    "query": "I was charged for a service I never used. I want a refund but I don't have the transaction details with me right now. Can you help me get my money back?",
+    "priority": "High",
+    "ticket_id": "TCK-PAY-003"
+}

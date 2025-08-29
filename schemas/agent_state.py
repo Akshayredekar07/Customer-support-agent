@@ -1,6 +1,4 @@
-# project-folder/schemas/agent_state.py
 from typing import TypedDict, Annotated, List, Dict, Any, Optional
-
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -21,9 +19,7 @@ class AgentState(TypedDict):
     solution_summary: str
     status: str
     audit_log: List[Dict[str, Any]]
-    route: str  # Temporary for routing
-    
-    # Additional fields for the workflow
+    route: str
     entities: Dict[str, Any]
     normalized_data: Dict[str, Any]
     clarification_question: str

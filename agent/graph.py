@@ -1,6 +1,5 @@
-# project-folder/agent/graph.py
 """
-Langie - LangGraph Agent for Customer Support Workflows
+LangGraph Agent for Customer Support Workflows
 """
 
 from langgraph.graph import StateGraph, START, END
@@ -12,7 +11,7 @@ from clients.common_client import CommonClient
 from clients.atlas_client import AtlasClient
 import asyncio
 
-# Initialize direct clients per spec (COMMON and ATLAS only)
+
 _COMMON = CommonClient()
 _ATLAS = AtlasClient()
 
@@ -38,7 +37,6 @@ async def _atlas_call(ability: str, **kwargs):
     return await asyncio.to_thread(_ATLAS.execute, ability, state_like)
 
 def add_audit(state: AgentState, stage: str, abilities: list, servers: list, extras: dict | None = None):
-    # Add slight offset per entry for more realistic differing timestamps
     offset_ms = len(state.get("audit_log", [])) * 3
     ts = (datetime.now() + timedelta(milliseconds=offset_ms)).isoformat(timespec="milliseconds")
     new_entry = {
@@ -60,13 +58,11 @@ async def intake_node(state: AgentState):
 async def understand_node(state: AgentState):
     abilities = []
     servers = []
-    
-    # Execute COMMON server ability (LLM-based)
     structured = await _common_call("parse_request_text", query=state["query"])
     abilities.append("parse_request_text")
     servers.append("COMMON")
     
-    # Execute ATLAS server ability (LLM-based), then prefer ATLAS if it returns more fields
+
     entities = await _atlas_call("extract_entities", query=state["query"]) 
     abilities.append("extract_entities")
     servers.append("ATLAS")
@@ -93,6 +89,12 @@ async def understand_node(state: AgentState):
     # Identify missing info for potential clarification
     required_keys = ["issue_type", "affected_component"]
     missing = [k for k in required_keys if not extracted.get(k)]
+    # Domain-specific required IDs
+    issue_type_val = str(extracted.get("issue_type", "")).lower()
+    if issue_type_val == "delivery" and not structured.get("order_number"):
+        missing.append("order_number")
+    if issue_type_val == "payment" and not (structured.get("transaction_reference") or extracted.get("transaction_reference")):
+        missing.append("transaction_reference")
     updates = {"structured_data": structured, "entities": extracted, "missing_info": missing}
     updates.update(add_audit(state, "UNDERSTAND", abilities, servers))
     return updates
@@ -117,7 +119,7 @@ async def prepare_node(state: AgentState):
     servers.append("COMMON")
     
     # LLM-based entity normalization (COMMON)
-    norm_entities = await mcp_client.execute_common_ability("entity_normalization", entities=state.get("structured_data", {}).get("entities", {}))
+    norm_entities = await _common_call("entity_normalization", entities=state.get("structured_data", {}).get("entities", {}))
     abilities.append("entity_normalization")
     servers.append("COMMON")
     
@@ -147,7 +149,7 @@ async def ask_node(state: AgentState):
         return {"audit_log": _audit["audit_log"]}
     
     # Execute ATLAS server ability
-    question = await _atlas_call("clarify_question", query=state["query"], structured_data=state.get("structured_data", {}))
+    question = await _atlas_call("clarify_question", query=state["query"], structured_data=state.get("structured_data", {}), missing_info=state.get("missing_info", []))
     abilities.append("clarify_question")
     servers.append("ATLAS")
     
@@ -340,8 +342,20 @@ async def complete_node(state: AgentState):
     return updates
 
 def decide_router(state: AgentState):
-    # Always pass through UPDATE so UPDATE → CREATE → DO will execute
-    return "UPDATE"
+    # Route based on the decision made in decide_node
+    route = state.get("route", "")
+    if route == "update":
+        return "UPDATE"
+    elif route == "create":
+        return "CREATE"
+    elif route == "do":
+        return "DO"
+    else:
+        # Default fallback - check if escalated
+        if state.get("escalate", False):
+            return "UPDATE"
+        else:
+            return "DO"
 
 # Build the graph
 workflow = StateGraph(state_schema=AgentState)

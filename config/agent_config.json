@@ -13,7 +13,7 @@
     {
       "name": "INTAKE",
       "type": "deterministic",
-      "description": "📥 Accept incoming request payload",
+      "description": "Accept incoming request payload",
       "abilities": [
         {
           "name": "accept_payload",
@@ -25,7 +25,7 @@
     {
       "name": "UNDERSTAND",
       "type": "deterministic", 
-      "description": "🧠 Parse and extract structured data from request",
+      "description": "Parse and extract structured data from request",
       "abilities": [
         {
           "name": "parse_request_text",
@@ -42,7 +42,7 @@
     {
       "name": "PREPARE",
       "type": "deterministic",
-      "description": "🛠️ Normalize and enrich data",
+      "description": "Normalize and enrich data",
       "abilities": [
         {
           "name": "normalize_fields",
@@ -64,7 +64,7 @@
     {
       "name": "ASK",
       "type": "deterministic",
-      "description": "❓ Request missing information from customer",
+      "description": "Request missing information from customer",
       "abilities": [
         {
           "name": "clarify_question",
@@ -76,7 +76,7 @@
     {
       "name": "WAIT",
       "type": "deterministic",
-      "description": "⏳ Wait for and capture customer response",
+      "description": "Wait for and capture customer response",
       "abilities": [
         {
           "name": "extract_answer",
@@ -93,7 +93,7 @@
     {
       "name": "RETRIEVE",
       "type": "deterministic",
-      "description": "📚 Search knowledge base for solutions",
+      "description": " Search knowledge base for solutions",
       "abilities": [
         {
           "name": "knowledge_base_search",
@@ -110,7 +110,7 @@
     {
       "name": "DECIDE",
       "type": "non-deterministic",
-      "description": "⚖️ Evaluate solutions and decide next action",
+      "description": "Evaluate solutions and decide next action",
       "abilities": [
         {
           "name": "solution_evaluation",
@@ -143,7 +143,7 @@
     {
       "name": "UPDATE",
       "type": "deterministic",
-      "description": "🔄 Update ticket status and fields",
+      "description": "Update ticket status and fields",
       "abilities": [
         {
           "name": "update_ticket",
@@ -160,7 +160,7 @@
     {
       "name": "CREATE",
       "type": "deterministic",
-      "description": "✍️ Generate customer response",
+      "description": "Generate customer response",
       "abilities": [
         {
           "name": "response_generation",
@@ -172,7 +172,7 @@
     {
       "name": "DO",
       "type": "deterministic",
-      "description": "🏃 Execute external actions",
+      "description": "Execute external actions",
       "abilities": [
         {
           "name": "execute_api_calls",
@@ -189,7 +189,7 @@
     {
       "name": "COMPLETE",
       "type": "deterministic",
-      "description": "✅ Output final structured payload",
+      "description": "Output final structured payload",
       "abilities": [
         {
           "name": "output_payload",

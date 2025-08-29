@@ -1,0 +1,7 @@
+{
+    "customer_name": "Sarah Johnson",
+    "email": "sarah.johnson@example.com",
+    "query": "URGENT: My 2FA authentication is completely broken and I cannot access my account. This is critical as I have pending transactions worth $50,000 that need immediate attention. The authentication code is not working and I'm locked out of my account. Please help immediately!",
+    "priority": "Critical",
+    "ticket_id": "TCK-CRIT-001"
+}

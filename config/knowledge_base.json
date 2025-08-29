@@ -9,8 +9,26 @@
       "id": "kb-002",
       "tags": ["2fa", "code", "otp"],
       "content": "If 2FA codes are not arriving, confirm phone/email, check spam, and resync time on authenticator apps."
+    },
+    {
+      "id": "kb-delivery-001",
+      "tags": ["delivery", "in transit", "delay", "courier", "tracking", "sla"],
+      "content": "For deliveries ‘In Transit’ > 48 hours without movement, escalate to courier with urgent flag and verify last scanned location."
+    },
+    {
+      "id": "kb-banking-001",
+      "tags": ["bank", "transfer", "beneficiary", "credited", "settlement", "txn"],
+      "content": "If a high-value transfer is debited but not credited within 24 hours, initiate a trace with the settlement team and notify the beneficiary’s bank."
+    },
+    {
+      "id": "kb-payment-dup-001",
+      "tags": ["payment", "duplicate", "charge", "refund"],
+      "content": "For duplicate charges, verify the transaction reference, then initiate a refund workflow within 24 hours."
+    },
+    {
+      "id": "kb-auth-2fa-001",
+      "tags": ["2fa", "code", "otp", "authenticator", "out of sync"],
+      "content": "If 2FA codes are missing, verify email access and spam folder, then re-sync the authenticator app time settings. If still blocked, issue a temporary login within 30 minutes."
     }
   ]
 }
-
-
