@@ -1,0 +1,6 @@
+
+GOOGLE_API_KEY=add_your_google_api_key_here
+GROQ_API_KEY=add_your_groq_api_key_here
+OPENAI_API_KEY=add_your_openai_api_key_here
+
+

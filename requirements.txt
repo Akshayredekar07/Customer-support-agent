@@ -7,7 +7,6 @@ langchain-groq
 langchain-google-genai
 
 # UI for interaction
-chainlit
 gradio
 
 # Environment and configuration
