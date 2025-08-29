@@ -1,0 +1,37 @@
+
+# Core LLM and LangGraph
+langgraph
+langchain
+langchain-openai
+langchain-groq
+langchain-google-genai
+
+# UI for interaction
+chainlit
+gradio
+
+# Environment and configuration
+python-dotenv
+PyYAML
+
+# Vector database for RAG
+chromadb
+langchain-chroma
+
+# Database for MCP storage
+sqlite-utils
+
+# Async and utilities
+httpx
+pydantic
+
+# For LLM stubs/mocks
+faker
+
+# Optional but useful for dev
+black
+isort
+
+fastmcp
+
+langchain-mcp-adapters

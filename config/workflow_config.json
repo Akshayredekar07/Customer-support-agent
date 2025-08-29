@@ -1,0 +1,110 @@
+{
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "customer_name",
+      "email",
+      "query",
+      "priority",
+      "ticket_id"
+    ],
+    "properties": {
+      "customer_name": { "type": "string" },
+      "email": { "type": "string", "format": "email" },
+      "query": { "type": "string" },
+      "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+      "ticket_id": { "type": "string" }
+    }
+  },
+  "stages": [
+    {
+      "name": "INTAKE",
+      "mode": "deterministic",
+      "abilities": ["accept_payload"],
+      "prompt": "Accept the incoming payload and initialize workflow state."
+    },
+    {
+      "name": "UNDERSTAND",
+      "mode": "deterministic",
+      "abilities": ["parse_request_text", "extract_entities"],
+      "prompt": "You are a request parser. Convert the unstructured customer query into structured fields like product, issue, urgency, and dates."
+    },
+    {
+      "name": "PREPARE",
+      "mode": "deterministic",
+      "abilities": ["normalize_fields", "enrich_records", "add_flags_calculations"],
+      "prompt": "Normalize priority and enrich the record with SLA/history. Add SLA risk flags."
+    },
+    {
+      "name": "ASK",
+      "mode": "deterministic",
+      "abilities": ["clarify_question"],
+      "prompt": "Based on missing details, generate a concise and polite clarification question for the customer."
+    },
+    {
+      "name": "WAIT",
+      "mode": "deterministic",
+      "abilities": ["extract_answer", "store_answer"],
+      "prompt": "Extract the answer from the customer's reply and store it in state."
+    },
+    {
+      "name": "RETRIEVE",
+      "mode": "deterministic",
+      "abilities": ["knowledge_base_search", "store_data"],
+      "prompt": "Search the knowledge base for guidance relevant to the parsed intent and entities."
+    },
+    {
+      "name": "DECIDE",
+      "mode": "non_deterministic",
+      "abilities": ["solution_evaluation", "escalation_decision", "update_payload"],
+      "prompt": "Given the context and candidate resolutions, assign a confidence score (0-100). If score < 90, recommend escalation and specify the path."
+    },
+    {
+      "name": "UPDATE",
+      "mode": "deterministic",
+      "abilities": ["update_ticket", "close_ticket"],
+      "prompt": "Update the external ticketing system as required (in_progress/closed)."
+    },
+    {
+      "name": "CREATE",
+      "mode": "deterministic",
+      "abilities": ["response_generation"],
+      "prompt": "Generate a professional, empathetic customer response summarizing the resolution and next steps."
+    },
+    {
+      "name": "DO",
+      "mode": "deterministic",
+      "abilities": ["execute_api_calls", "trigger_notifications"],
+      "prompt": "Execute necessary API calls and send notifications."
+    },
+    {
+      "name": "COMPLETE",
+      "mode": "deterministic",
+      "abilities": ["output_payload"],
+      "prompt": "Finalize the workflow and output the structured payload."
+    }
+  ],
+  "ability_to_mcp": {
+    "COMMON": [
+      "parse_request_text",
+      "normalize_fields",
+      "add_flags_calculations",
+      "solution_evaluation",
+      "response_generation"
+    ],
+    "ATLAS": [
+      "extract_entities",
+      "enrich_records",
+      "clarify_question",
+      "extract_answer",
+      "knowledge_base_search",
+      "escalation_decision",
+      "update_ticket",
+      "close_ticket",
+      "execute_api_calls",
+      "trigger_notifications"
+    ]
+  }
+}
+
+

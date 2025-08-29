@@ -1,0 +1,202 @@
+
+{
+  "graph_name": "LangieAgent",
+  "state_schema": "AgentState",
+  "input_schema": {
+    "customer_name": "string",
+    "email": "string", 
+    "query": "string",
+    "priority": "string",
+    "ticket_id": "string"
+  },
+  "nodes": [
+    {
+      "name": "INTAKE",
+      "type": "deterministic",
+      "description": "📥 Accept incoming request payload",
+      "abilities": [
+        {
+          "name": "accept_payload",
+          "server": null,
+          "description": "Capture incoming request payload (customer name, email, query, priority, ticket_id)"
+        }
+      ]
+    },
+    {
+      "name": "UNDERSTAND",
+      "type": "deterministic", 
+      "description": "🧠 Parse and extract structured data from request",
+      "abilities": [
+        {
+          "name": "parse_request_text",
+          "server": "COMMON",
+          "description": "Convert unstructured request to structured data"
+        },
+        {
+          "name": "extract_entities",
+          "server": "ATLAS",
+          "description": "Identify product, account, dates"
+        }
+      ]
+    },
+    {
+      "name": "PREPARE",
+      "type": "deterministic",
+      "description": "🛠️ Normalize and enrich data",
+      "abilities": [
+        {
+          "name": "normalize_fields",
+          "server": "COMMON",
+          "description": "Standardize dates, codes, IDs"
+        },
+        {
+          "name": "enrich_records",
+          "server": "ATLAS",
+          "description": "Add SLA, historical ticket info"
+        },
+        {
+          "name": "add_flags_calculations",
+          "server": "COMMON",
+          "description": "Compute priority or SLA risk"
+        }
+      ]
+    },
+    {
+      "name": "ASK",
+      "type": "deterministic",
+      "description": "❓ Request missing information from customer",
+      "abilities": [
+        {
+          "name": "clarify_question",
+          "server": "ATLAS",
+          "description": "Request missing information"
+        }
+      ]
+    },
+    {
+      "name": "WAIT",
+      "type": "deterministic",
+      "description": "⏳ Wait for and capture customer response",
+      "abilities": [
+        {
+          "name": "extract_answer",
+          "server": "ATLAS",
+          "description": "Wait and capture concise response"
+        },
+        {
+          "name": "store_answer",
+          "server": null,
+          "description": "Update payload with response"
+        }
+      ]
+    },
+    {
+      "name": "RETRIEVE",
+      "type": "deterministic",
+      "description": "📚 Search knowledge base for solutions",
+      "abilities": [
+        {
+          "name": "knowledge_base_search",
+          "server": "ATLAS",
+          "description": "Lookup KB or FAQ"
+        },
+        {
+          "name": "store_data",
+          "server": null,
+          "description": "Attach retrieved info to payload"
+        }
+      ]
+    },
+    {
+      "name": "DECIDE",
+      "type": "non-deterministic",
+      "description": "⚖️ Evaluate solutions and decide next action",
+      "abilities": [
+        {
+          "name": "solution_evaluation",
+          "server": "COMMON",
+          "description": "Score potential solutions 1-100"
+        },
+        {
+          "name": "escalation_decision",
+          "server": "ATLAS",
+          "description": "Assign to human agent if score <90"
+        },
+        {
+          "name": "update_payload",
+          "server": null,
+          "description": "Record decision outcomes"
+        }
+      ],
+      "routing_logic": {
+        "type": "conditional",
+        "condition_key": "route",
+        "routes": {
+          "ask": "ASK",
+          "update": "UPDATE", 
+          "do": "DO",
+          "create": "CREATE"
+        },
+        "prompt": "Score solutions and escalate if <90"
+      }
+    },
+    {
+      "name": "UPDATE",
+      "type": "deterministic",
+      "description": "🔄 Update ticket status and fields",
+      "abilities": [
+        {
+          "name": "update_ticket",
+          "server": "ATLAS",
+          "description": "Modify status, fields, priority"
+        },
+        {
+          "name": "close_ticket",
+          "server": "ATLAS",
+          "description": "Mark issue resolved"
+        }
+      ]
+    },
+    {
+      "name": "CREATE",
+      "type": "deterministic",
+      "description": "✍️ Generate customer response",
+      "abilities": [
+        {
+          "name": "response_generation",
+          "server": "COMMON",
+          "description": "Draft customer reply"
+        }
+      ]
+    },
+    {
+      "name": "DO",
+      "type": "deterministic",
+      "description": "🏃 Execute external actions",
+      "abilities": [
+        {
+          "name": "execute_api_calls",
+          "server": "ATLAS",
+          "description": "Trigger CRM/order system actions"
+        },
+        {
+          "name": "trigger_notifications",
+          "server": "ATLAS",
+          "description": "Notify customer"
+        }
+      ]
+    },
+    {
+      "name": "COMPLETE",
+      "type": "deterministic",
+      "description": "✅ Output final structured payload",
+      "abilities": [
+        {
+          "name": "output_payload",
+          "server": null,
+          "description": "Print final structured payload"
+        }
+      ]
+    }
+  ]
+}

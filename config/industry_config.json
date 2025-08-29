@@ -1,0 +1,122 @@
+{
+  "software_engineering": {
+    "name": "Software Engineering",
+    "description": "Customer support for software products and services",
+    "keywords": {
+      "products": ["software", "application", "system", "platform", "api", "service"],
+      "issues": ["bug", "error", "crash", "performance", "security", "threshold", "priority"],
+      "solutions": ["fix", "patch", "update", "escalation", "support", "maintenance"]
+    },
+    "sla_config": {
+      "critical": 1,
+      "very_high": 2,
+      "high": 4,
+      "medium": 24,
+      "low": 72
+    },
+    "escalation_paths": {
+      "critical": "Senior Software Engineer - Immediate",
+      "very_high": "Senior Software Engineer - High Priority",
+      "high": "Team Lead - High Priority",
+      "medium": "Software Engineer - Medium Priority",
+      "low": "Junior Engineer - Standard Priority"
+    },
+    "knowledge_base": [
+      {
+        "pattern": "threshold",
+        "solution": "Priority threshold issues require immediate escalation to senior engineers.",
+        "category": "urgent"
+      },
+      {
+        "pattern": "very high",
+        "solution": "Very high priority issues need immediate attention and escalation.",
+        "category": "critical"
+      },
+      {
+        "pattern": "software",
+        "solution": "Software issues require technical expertise and proper escalation paths.",
+        "category": "technical"
+      }
+    ]
+  },
+  "ecommerce": {
+    "name": "E-commerce",
+    "description": "Customer support for online retail and shopping",
+    "keywords": {
+      "products": ["product", "item", "order", "purchase", "shipping", "delivery"],
+      "issues": ["defective", "damaged", "missing", "wrong", "late", "refund"],
+      "solutions": ["replacement", "refund", "exchange", "compensation", "support"]
+    },
+    "sla_config": {
+      "critical": 2,
+      "very_high": 4,
+      "high": 8,
+      "medium": 24,
+      "low": 72
+    },
+    "escalation_paths": {
+      "critical": "Senior Customer Service Manager - Immediate",
+      "very_high": "Customer Service Manager - High Priority",
+      "high": "Team Lead - High Priority",
+      "medium": "Customer Service Representative - Medium Priority",
+      "low": "Junior Representative - Standard Priority"
+    },
+    "knowledge_base": [
+      {
+        "pattern": "defective",
+        "solution": "Defective products can be replaced within 30 days of purchase.",
+        "category": "product_issue"
+      },
+      {
+        "pattern": "refund",
+        "solution": "Refunds are processed within 5-7 business days.",
+        "category": "financial"
+      },
+      {
+        "pattern": "shipping",
+        "solution": "Shipping issues are handled by our logistics team.",
+        "category": "logistics"
+      }
+    ]
+  },
+  "healthcare": {
+    "name": "Healthcare",
+    "description": "Customer support for healthcare services and products",
+    "keywords": {
+      "products": ["medical", "device", "equipment", "medication", "treatment", "appointment"],
+      "issues": ["emergency", "urgent", "critical", "malfunction", "safety", "quality"],
+      "solutions": ["immediate_attention", "escalation", "specialist", "emergency_response"]
+    },
+    "sla_config": {
+      "critical": 0.5,
+      "very_high": 1,
+      "high": 2,
+      "medium": 4,
+      "low": 24
+    },
+    "escalation_paths": {
+      "critical": "Emergency Response Team - Immediate",
+      "very_high": "Senior Medical Specialist - Immediate",
+      "high": "Medical Specialist - High Priority",
+      "medium": "Medical Representative - Medium Priority",
+      "low": "Support Staff - Standard Priority"
+    },
+    "knowledge_base": [
+      {
+        "pattern": "emergency",
+        "solution": "Emergency issues require immediate escalation to emergency response team.",
+        "category": "emergency"
+      },
+      {
+        "pattern": "safety",
+        "solution": "Safety concerns are handled with highest priority by medical specialists.",
+        "category": "safety"
+      },
+      {
+        "pattern": "critical",
+        "solution": "Critical medical issues need immediate specialist attention.",
+        "category": "critical"
+      }
+    ]
+  }
+}

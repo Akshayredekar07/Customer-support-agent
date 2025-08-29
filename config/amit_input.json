@@ -1,0 +1,8 @@
+{
+    "customer_name": "Amit Patel",
+    "email": "amit.patel@example.com",
+    "query": "Hello, I ordered a dining table on 20th August and it was scheduled for delivery on 25th August. Today is 29th August and I have still not received any update. The tracking link shows 'In Transit' for the last 4 days with no movement. I need this urgently for a family function this weekend. Please confirm the current status and expedite the delivery.",
+    "priority": "High",
+    "ticket_id": "TCK-DEL-62190"
+  }
+  

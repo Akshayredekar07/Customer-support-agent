@@ -1,0 +1,9 @@
+{
+  "customer_name": "Priya Sharma",
+  "email": "priya.sharma@example.com",
+  "query": "Hello support team, I am unable to access my account due to a two-factor authentication issue. The 2FA codes sent to my email never arrive, and the authenticator app shows an out-of-sync warning. I already verified that the email address on file is correct, checked the spam folder, and tried multiple times today. Please help me regain access urgently as I have a critical deadline and need to download my project invoices.",
+  "priority": "Critical",
+  "ticket_id": "TCK-INV-90876"
+}
+
+

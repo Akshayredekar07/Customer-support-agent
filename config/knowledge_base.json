@@ -1,0 +1,16 @@
+{
+  "articles": [
+    {
+      "id": "kb-001",
+      "tags": ["password", "reset", "link"],
+      "content": "If a password reset link fails, request a new link and try from an incognito browser. Verify email and check spam folder."
+    },
+    {
+      "id": "kb-002",
+      "tags": ["2fa", "code", "otp"],
+      "content": "If 2FA codes are not arriving, confirm phone/email, check spam, and resync time on authenticator apps."
+    }
+  ]
+}
+
+

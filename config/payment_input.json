@@ -1,0 +1,8 @@
+{
+    "customer_name": "Rajesh Kumar",
+    "email": "rajesh.kumar@example.com",
+    "query": "Hi team, my payment for the premium subscription was deducted twice from my account yesterday, but the invoice only reflects one payment. I need the extra charge refunded immediately as this is a large amount. I can share transaction details if needed. Please advise on the next steps.",
+    "priority": "High",
+    "ticket_id": "TCK-PAY-55432"
+  }
+  
